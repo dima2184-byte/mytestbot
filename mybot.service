@@ -1,0 +1,14 @@
+[Unit]
+Description=Telegram Agent Bot on Claude
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/root/mytestbot
+ExecStart=/root/mytestbot/venv/bin/python /root/mytestbot/agent_bot.py
+Restart=always
+RestartSec=5
+EnvironmentFile=-/root/mytestbot/.env
+
+[Install]
+WantedBy=multi-user.target
