@@ -235,7 +235,11 @@ async def cmd_reset(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 async def cmd_notes(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     uid = update.effective_user.id
-    await update.message.reply_text(tool_list_notes(uid))
+    try:
+        await update.message.reply_text(tool_list_notes(uid))
+    except Exception:
+        log.exception("cmd_notes error")
+        await update.message.reply_text("Помилка при завантаженні нотаток.")
 
 
 async def handle_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
