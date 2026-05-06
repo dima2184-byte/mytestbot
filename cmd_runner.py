@@ -14,11 +14,25 @@ HEADERS  = {
     "Accept": "application/vnd.github+json",
     "X-GitHub-Api-Version": "2022-11-28",
 }
-POLL_SEC   = 5
+POLL_SEC    = 5
 CMD_TIMEOUT = 120
-MAX_OUT    = 3000
+MAX_OUT     = 3000
 
 last_id = None
+_SECRETS: list[str] = []
+
+
+def _load_secrets() -> None:
+    keys = ["GITHUB_TOKEN", "TELEGRAM_BOT_TOKEN", "ANTHROPIC_API_KEY"]
+    _SECRETS.clear()
+    _SECRETS.extend(os.environ[k] for k in keys if os.environ.get(k))
+
+
+def redact(text: str) -> str:
+    for s in _SECRETS:
+        if s:
+            text = text.replace(s, "***REDACTED***")
+    return text
 
 
 def gh_get(path: str) -> dict:
@@ -44,7 +58,6 @@ def gh_put(path: str, content: str, sha: str) -> None:
 
 
 def read_json_file(path: str) -> tuple[dict, str]:
-    """Returns (parsed_json, sha)."""
     import base64
     data = gh_get(path)
     content = base64.b64decode(data["content"]).decode()
@@ -58,8 +71,8 @@ def run_cmd(cmd: str) -> dict:
         )
         stdout = result.stdout[-MAX_OUT:] if len(result.stdout) > MAX_OUT else result.stdout
         return {
-            "stdout": stdout,
-            "stderr": result.stderr[-1000:],
+            "stdout": redact(stdout),
+            "stderr": redact(result.stderr[-1000:]),
             "returncode": result.returncode,
             "ts": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         }
@@ -70,6 +83,7 @@ def run_cmd(cmd: str) -> dict:
 
 def main():
     global last_id
+    _load_secrets()
     print("cmd_runner started", flush=True)
     while True:
         try:
