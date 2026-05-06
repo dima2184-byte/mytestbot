@@ -1,1 +1,1 @@
-{"id":"check-logs-1","cmd":"journalctl -u mybot.service -n 10 --no-pager"}
+{"id":"check-logs-2","cmd":"journalctl -u mybot.service --no-pager | grep 'Agent bot started'"}
